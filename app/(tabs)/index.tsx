@@ -1,11 +1,56 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, TouchableOpacity, View, ScrollView, ActivityIndicator } from 'react-native';
+import { useState, useEffect } from 'react';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useAuth } from '@/context/AuthContext';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { GolfCartList } from '@/components/GolfCart/GolfCartList';
+import { getGolfCarts } from '@/services/supabase';
+import { GolfCart } from '@/types/golfCart';
+import { ProductCard } from '@/components/ProductCard';
 
 export default function HomeScreen() {
+  const { user, logout } = useAuth();
+  const colorScheme = useColorScheme();
+  const [golfCarts, setGolfCarts] = useState<GolfCart[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Format name for display - use first name if available, otherwise email
+  const displayName = user?.firstName || user?.email?.split('@')[0] || 'Guest';
+  
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  useEffect(() => {
+    loadGolfCarts();
+  }, []);
+
+  const loadGolfCarts = async () => {
+    try {
+      console.log('Loading golf carts...');
+      const carts = await getGolfCarts();
+      console.log('Golf carts loaded:', carts.length);
+      setGolfCarts(carts);
+    } catch (error) {
+      console.error('Error loading golf carts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+      </ThemedView>
+    );
+  }
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -16,39 +61,38 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">Hello, {displayName}!</ThemedText>
         <HelloWave />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
+      
+      <ThemedView style={styles.accountContainer}>
+        <ThemedText type="subtitle">Your Account</ThemedText>
         <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
+          You are logged in as <ThemedText type="defaultSemiBold">{user?.email}</ThemedText>
         </ThemedText>
+        <TouchableOpacity 
+          onPress={handleLogout} 
+          style={[
+            styles.logoutButton, 
+            { backgroundColor: Colors[colorScheme ?? 'light'].tint }
+          ]}
+        >
+          <ThemedText style={styles.logoutButtonText}>Logout</ThemedText>
+        </TouchableOpacity>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
+      
+      <ThemedView style={styles.catalogContainer}>
+        <ThemedText type="title">Premium Golf Carts</ThemedText>
+        <ThemedText style={styles.subtitle}>Browse our exclusive collection</ThemedText>
+        
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {golfCarts.map((cart) => (
+            <ProductCard key={cart.id} cart={cart} />
+          ))}
+        </ScrollView>
       </ThemedView>
     </ParallaxScrollView>
   );
@@ -59,10 +103,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginBottom: 16,
   },
-  stepContainer: {
+  accountContainer: {
     gap: 8,
-    marginBottom: 8,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  catalogContainer: {
+    marginTop: 16,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 16,
+  },
+  scrollContent: {
+    paddingVertical: 16,
   },
   reactLogo: {
     height: 178,
@@ -70,5 +139,21 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  logoutButton: {
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

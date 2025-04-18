@@ -18,7 +18,7 @@ export function ProductCard({ cart }: ProductCardProps) {
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress}>
       <Image
-        source={{ uri: 'https://placehold.co/300x200' }}
+        source={{ uri: cart.image_url || 'https://placehold.co/300x200' }}
         style={styles.image}
       />
       <View style={styles.content}>

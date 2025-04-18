@@ -10,7 +10,17 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Set up environment variables
+
+   Create a `.env` file in the root directory based on `.env.example` and fill in your Supabase credentials:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Then edit the `.env` file to add your actual Supabase URL and anon key.
+
+3. Start the app
 
    ```bash
     npx expo start
@@ -24,6 +34,14 @@ In the output, you'll find options to open the app in a
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+## Security Notes
+
+- **NEVER** commit your `.env` file or any file containing sensitive credentials to your repository
+- If you accidentally expose credentials, immediately:
+  1. Regenerate the credentials in your Supabase dashboard
+  2. Update your local `.env` file
+  3. Deploy the changes to your application
 
 ## Get a fresh project
 

@@ -1,15 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 import { GolfCart } from '@/types/golfCart';
+import Constants from 'expo-constants';
 
-const supabaseUrl = 'https://ncdopfiyapudodxuqvqm.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZG9wZml5YXB1ZG9keHVxdnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzkzMDksImV4cCI6MjA2MDQxNTMwOX0.eAYTV5ugrgmMSuwT2j42BGR803201cQG6bQxXP3bWUo';
+// Get environment variables from Expo's Constants
+const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables. Check your .env file.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function getGolfCarts(): Promise<GolfCart[]> {
   console.log('Supabase getGolfCarts: Starting request');
   try {
-    console.log('Supabase URL:', supabaseUrl);
+    console.log('Supabase URL:', supabaseUrl.replace(/https:\/\/|\.supabase\.co/g, '***'));
     const { data, error } = await supabase
       .from('golf_carts')
       .select('*')

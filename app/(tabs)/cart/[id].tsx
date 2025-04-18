@@ -66,7 +66,7 @@ export default function CartDetailScreen() {
         <ThemedText style={styles.backButtonText}>← Back</ThemedText>
       </TouchableOpacity>
       
-      <Image source={{ uri: 'https://placehold.co/600x400' }} style={styles.image} resizeMode="cover" />
+      <Image source={{ uri: cart.image_url || 'https://placehold.co/600x400' }} style={styles.image} resizeMode="cover" />
       
       <View style={styles.contentContainer}>
         <View style={styles.header}>
